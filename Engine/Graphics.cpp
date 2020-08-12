@@ -316,6 +316,54 @@ void Graphics::PutPixel( int x,int y,Color c )
 	pSysBuffer[Graphics::ScreenWidth * y + x] = c;
 }
 
+void Graphics::DrawLine(Vec2 v1, Vec2 v2, Color col)
+{
+	Vei2 start;
+	Vei2 end;
+	float m = 0.0f;
+	if (v1.x != v2.x)
+	{
+		m = (float)(v1.y - v2.y) / (float)(v1.x - v2.x);
+	}
+	start.x = (int)(std::min((std::max)(0.0f, v1.x), (float)ScreenWidth - 1));
+	start.y = (int)(std::min((std::max)(0.0f, v1.y), (float)ScreenHeight - 1));
+	end.x = (int)(std::min((std::max)(0.0f, v2.x), (float)ScreenWidth - 1));
+	end.y = (int)(std::min((std::max)(0.0f, v2.y), (float)ScreenHeight - 1));
+	if (start.x != end.x && std::abs(m) < 1.0f)
+	{
+		if (start.x > end.x)
+		{
+			std::swap(start, end);
+		}
+		const float c = v1.y - (m * v1.x);
+		for (; start.x <= end.x; start.x++)
+		{
+			int y = (int)(m * start.x + c);
+			if (y < ScreenHeight && y >= 0)
+			{
+				PutPixel(start.x, y, col);
+			}
+		}
+	}
+	else if (start.y != end.y)
+	{
+		const float w = (v1.x - v2.x) / (v1.y - v2.y);
+		const float c = v1.x - (v1.y * w);
+		if (start.y > end.y)
+		{
+			std::swap(start, end);
+		}
+		for (; start.y <= end.y; start.y++)
+		{
+			int x = int((w * start.y) + c);
+			if (x < ScreenWidth && x >= 0)
+			{
+				PutPixel(x, start.y, col);
+			}
+		}
+	}
+}
+
 
 //////////////////////////////////////////////////
 //           Graphics Exception

@@ -1,5 +1,5 @@
 /******************************************************************************************
-*	Chili DirectX Framework Version 16.07.20											  *
+*	Chili DirectX Framework Version 16.10.01											  *
 *	Colors.h																			  *
 *	Copyright 2016 PlanetChili <http://www.planetchili.net>								  *
 *																						  *
@@ -20,11 +20,19 @@
 ******************************************************************************************/
 #pragma once
 
+#include "Vec3.h"
+#include <random>
+
 class Color
 {
 public:
 	unsigned int dword;
 public:
+	static Color GetRand(std::mt19937& rng)
+	{
+		std::uniform_int_distribution<int>hue(0, 255);
+		return Color(hue(rng), hue(rng), hue(rng));
+	}
 	constexpr Color() : dword() {}
 	constexpr Color( const Color& col )
 		:
@@ -46,10 +54,26 @@ public:
 		:
 		Color( (x << 24u) | col.dword )
 	{}
+	explicit Color( const Vec3& cf )
+		:
+		Color( unsigned char( cf.x ),unsigned char( cf.y ),unsigned char( cf.z ) )
+	{}
+	explicit operator Vec3() const
+	{
+		return{ float( GetR() ),float( GetG() ), float( GetB() ) };
+	}
 	Color& operator =( Color color )
 	{
 		dword = color.dword;
 		return *this;
+	}
+	bool operator==(const Color& rhs) const
+	{
+		return dword == rhs.dword;
+	}
+	bool operator!=(const Color& rhs) const
+	{
+		return !(*this == rhs);
 	}
 	constexpr unsigned char GetX() const
 	{
