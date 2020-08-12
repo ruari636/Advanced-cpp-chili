@@ -47,7 +47,7 @@ public:
 	}
 	void ScaleCenter(Vec2 deltaScale)
 	{
-		scaleCenter *= deltaScale;
+		scaleCenter += deltaScale;
 		Refresh();
 	}
 	void SetScaleCenter(Vec2 Scale)
@@ -61,8 +61,8 @@ public:
 		Vertices = s.GetShape();
 		for (Vec2& v : Vertices)
 		{
-			v *= scaleCenter;
 			v -= deltaOrigin;
+			v *= scaleCenter;
 			v *= scaleOrigin;
 		}
 	}
@@ -167,14 +167,17 @@ public:
 		}
 		cur = Color((int)curR, (int)curG, (int)curB);
 
+		float deltaScale = deltaT / timeToShrink * minScale;
 		if (max)
 		{
-			SetScaleCenter({ EffectScale -= deltaT / timeToShrink * minScale, EffectScale -= deltaT / timeToShrink * minScale });
+			EffectScale -= deltaScale;
+			ScaleCenter({ -deltaScale, -deltaScale });
 			max = EffectScale > minScale;
 		}
 		else
 		{
-			SetScaleCenter({ EffectScale += deltaT / timeToShrink * minScale, EffectScale += deltaT / timeToShrink * minScale });
+			EffectScale += deltaScale;
+			ScaleCenter({ deltaScale, deltaScale });
 			max = EffectScale > 1.0f;
 		}
 	}
