@@ -38,7 +38,7 @@ Game::Game( MainWindow& wnd )
         loc.y = -starRad * height + gfx.ScreenHeight;
         for (int y = 0; y < height; y++)
         {
-            Effect star(Effect::RandomStar());
+            Effect star(Effect::RandomStar(starRad));
             star.MoveTo(loc);
             mp.Add(std::make_unique<Effect>(star));
             loc.y += starRad * 2;

@@ -5,6 +5,8 @@
 
 class Drawer
 {
+	Vec2 TL;
+	Vec2 BR;
 	shape s;
 	Color c;
 	Vec2 pos = { 0.0f,0.0f };
@@ -19,6 +21,8 @@ public:
 		c(c),
 		s(s)
 	{
+		TL = s.GetTL();
+		BR = s.GetBR();
 	}
 	Vec2 GetPos() { return pos; }
 	Vec2 GetScale() { return scaleCenter; }
@@ -59,24 +63,37 @@ public:
 	void Refresh()
 	{
 		Vertices = s.GetShape();
+		TL = s.GetTL();
+		BR = s.GetBR();
 		for (Vec2& v : Vertices)
 		{
-			v -= deltaOrigin;
 			v *= scaleCenter;
+			v -= deltaOrigin;
 			v *= scaleOrigin;
 		}
+		TL *= scaleCenter;
+		TL -= deltaOrigin;
+		TL *= scaleOrigin;
+		BR *= scaleCenter;
+		BR -= deltaOrigin;
+		BR *= scaleOrigin;
 	}
 	void Draw(Graphics& gfx)
 	{
-		for (auto cur = Vertices.begin() + 1; cur != Vertices.end(); cur++)
-			gfx.DrawLine(*(cur - 1) + pos, *cur + pos, c);
-		gfx.DrawLine(*(Vertices.end() - 1) + pos, *Vertices.begin() + pos, c);
+		Vec2 curTL = TL + pos;
+		Vec2 curBR = BR + pos;
+		if ((curTL.x < gfx.ScreenWidth && curTL.y < gfx.ScreenHeight) && (curBR.x > 0 && curBR.y > 0))
+		{
+			for (auto cur = Vertices.begin() + 1; cur != Vertices.end(); cur++)
+				gfx.DrawLine(*(cur - 1) + pos, *cur + pos, c);
+			gfx.DrawLine(*(Vertices.end() - 1) + pos, *Vertices.begin() + pos, c);
+		}
 	}
 	void MoveOriginTo(Vec2 newPos) 
 	{
-		newPos -= pos;
-		pos += newPos;
-		deltaOrigin += (newPos / scaleCenter);
+		Vec2 deltaPos = newPos - pos;
+		pos = newPos;
+		deltaOrigin += (deltaPos / scaleOrigin);
 		Refresh();
 	}
 	Color& GetCol(){ return c; }
@@ -125,12 +142,12 @@ public:
 		minScale(minScale)
 	{
 	}
-	static Effect RandomStar()
+	static Effect RandomStar(float starRad = 420.0f)
 	{
 		std::random_device rd;
 		std::mt19937 rng(rd());
 		std::uniform_real_distribution<float>innerRad(15.0f, 120.0f);
-		std::uniform_real_distribution<float>outerRad(120.0f, 420.0f);
+		std::uniform_real_distribution<float>outerRad(120.0f, starRad);
 		std::uniform_real_distribution<float>timeToChange(0.25f, 10.0f);
 		std::uniform_real_distribution<float>zeroToOne(0.1f, 0.9f);
 		std::uniform_int_distribution<int>prongs(3, 12);
@@ -144,8 +161,8 @@ public:
 		}
 
 		star Star = star(outerRad(rng), innerRad(rng), prongs(rng));
-
-		return Effect(Star, c1, c2, zeroToOne(rng), timeToChange(rng), timeToChange(rng));
+		float min = zeroToOne(rng);
+		return Effect(Star, c1, c2, min, timeToChange(rng), timeToChange(rng));
 	}
 	void Update(float deltaT) override
 	{
@@ -167,7 +184,7 @@ public:
 		}
 		cur = Color((int)curR, (int)curG, (int)curB);
 
-		float deltaScale = deltaT / timeToShrink * minScale;
+		float deltaScale = minScale * deltaT * timeToShrink;
 		if (max)
 		{
 			EffectScale -= deltaScale;
