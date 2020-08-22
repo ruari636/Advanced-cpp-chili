@@ -53,6 +53,7 @@ private:
 	static constexpr float minStarRad = 120.0f;
 	static constexpr int height = 10;
 	static constexpr int width = 20;
+	float runTime = 0.0f;
 
 	bool mouseIsPressed;
 	Vec2 prevMousePos;

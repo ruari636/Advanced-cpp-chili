@@ -63,6 +63,10 @@ public:
 		scaleCenter = Scale;
 		Refresh();
 	}
+	void SetScaleCenter(float Scale)
+	{
+		SetScaleCenter({ Scale, Scale });
+	}
 	void ChangeColor(Color c_in) { c = c_in; }
 	void Refresh()
 	{
@@ -132,6 +136,9 @@ class Effect : public Drawer
 	bool max = true;
 	float EffectScale = 1.0f;
 	float minScale = 0.5f;
+	float sinMultiplier = (EffectScale - minScale) / 2.0f;
+	float startScale = (EffectScale + minScale) / 2.0f;
+	float timePassed = 0.0f;
 
 public:
 	Effect(std::shared_ptr<shape> s, Color c, Color c2, float minScale, float timeToChange, float timeToShrink)
@@ -153,7 +160,7 @@ public:
 		std::mt19937 rng(rd());
 		std::uniform_real_distribution<float>innerRad(15.0f, 120.0f);
 		std::uniform_real_distribution<float>outerRad(120.0f, starRad);
-		std::uniform_real_distribution<float>timeToChange(0.25f, 10.0f);
+		std::uniform_real_distribution<float>timeToChange(0.1f, 2.0f);
 		std::uniform_real_distribution<float>zeroToOne(0.1f, 0.9f);
 		std::uniform_int_distribution<int>prongs(3, 12);
 		std::uniform_int_distribution<int>hue(0, 255);
@@ -167,7 +174,7 @@ public:
 
 		star Star = star(outerRad(rng), innerRad(rng), prongs(rng));
 		float min = zeroToOne(rng);
-		return Effect(std::make_shared<star>(Star), c1, c2, min, timeToChange(rng), timeToChange(rng));
+		return Effect(std::make_shared<star>(Star), c1, c2, min, timeToChange(rng) * 5.0f, timeToChange(rng));
 	}
 	void Update(float deltaT) override
 	{
@@ -189,19 +196,8 @@ public:
 		}
 		cur = Color((int)curR, (int)curG, (int)curB);
 
-		float deltaScale = minScale * deltaT * timeToShrink;
-		if (max)
-		{
-			EffectScale -= deltaScale;
-			ScaleCenter({ -deltaScale, -deltaScale });
-			max = EffectScale > minScale;
-		}
-		else
-		{
-			EffectScale += deltaScale;
-			ScaleCenter({ deltaScale, deltaScale });
-			max = EffectScale > 1.0f;
-		}
+		timePassed += deltaT;
+		SetScaleCenter((sin(timePassed / timeToShrink) * sinMultiplier) + startScale);
 	}
 };
 
