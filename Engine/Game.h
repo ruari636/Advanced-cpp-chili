@@ -25,6 +25,7 @@
 #include "Graphics.h"
 #include "ShapeManager.h"
 #include "FrameTimer.h"
+#include "Shape.h"
 #include <random>
 
 class Game
@@ -43,13 +44,17 @@ private:
 private:
 	MainWindow& wnd;
 	Graphics gfx;
-    FrameTimer ft;
-    MoveSpace mp;
-    std::mt19937 rng;
-    static constexpr float starRad = 420.0f;
-    static constexpr int height = 10;
-    static constexpr int width = 20;
 	/********************************/
 	/*  User Variables              */
+	FrameTimer ft;
+	MoveSpace mp;
+	std::mt19937 rng;
+	static constexpr float starRad = 420.0f;
+	static constexpr float minStarRad = 120.0f;
+	static constexpr int height = 10;
+	static constexpr int width = 20;
+
+	bool mouseIsPressed;
+	Vec2 prevMousePos;
 	/********************************/
 };

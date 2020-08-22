@@ -27,21 +27,24 @@ Game::Game( MainWindow& wnd )
 	gfx( wnd ),
     rng(std::random_device()())
 {
-    std::uniform_real_distribution<float>innerRad(15.0f, 120.0f);
-    std::uniform_real_distribution<float>outerRad(120.0f, starRad);
+    std::uniform_real_distribution<float>innerRad(15.0f, minStarRad);
+    std::uniform_real_distribution<float>outerRad(minStarRad, starRad);
     std::uniform_int_distribution<int>prongs(3, 12);
     std::uniform_int_distribution<int>hue(0, 255);
-    Vec2 loc{ -starRad * width + gfx.ScreenWidth, -starRad * height + gfx.ScreenHeight};
+    Vec2 loc{ -(starRad) * width + gfx.ScreenWidth,
+        -(starRad - minStarRad) * height + gfx.ScreenHeight};
+    float curStarRad = 0.0f;
 
     for (int x = 0; x < width; x++)
     {
         loc.y = -starRad * height + gfx.ScreenHeight;
         for (int y = 0; y < height; y++)
         {
-            Effect star(Effect::RandomStar(starRad));
-            star.MoveTo(loc);
-            mp.Add(std::make_unique<Effect>(star));
-            loc.y += starRad * 2;
+            Effect Star(Effect::RandomStar(starRad));
+            curStarRad = Star.GetShape()->GetRad();
+            Star.MoveTo(loc + Vec2{ 0, curStarRad });
+            mp.Add(std::make_unique<Effect>(Star));
+            loc.y += curStarRad * 2;
         }
         loc.x += starRad * 2;
     }
@@ -58,21 +61,24 @@ void Game::Go()
 void Game::UpdateModel()
 {
     float deltaT = ft.Mark();
-    if (wnd.kbd.KeyIsPressed(VK_LEFT))
+    if (wnd.mouse.LeftIsPressed())
     {
-        mp.Move({ deltaT * 50, 0.0f });
+        if (mouseIsPressed)
+        {
+            Vec2 curMousePos = { float(wnd.mouse.GetPosX()), float(wnd.mouse.GetPosY()) };
+            Vec2 deltaMove = curMousePos - prevMousePos;
+            prevMousePos = curMousePos;
+            mp.Move(deltaMove);
+        }
+        if (!mouseIsPressed)
+        {
+            mouseIsPressed = true;
+            prevMousePos = { float(wnd.mouse.GetPosX()), float(wnd.mouse.GetPosY()) };
+        }
     }
-    if (wnd.kbd.KeyIsPressed(VK_RIGHT))
+    else
     {
-        mp.Move({ -deltaT * 50, 0.0f });
-    }
-    if (wnd.kbd.KeyIsPressed(VK_UP))
-    {
-        mp.Move({ 0.0f, deltaT * 50 });
-    }
-    if (wnd.kbd.KeyIsPressed(VK_DOWN))
-    {
-        mp.Move({ 0.0f, -deltaT * 50 });
+        mouseIsPressed = false;
     }
     
     while (!wnd.mouse.IsEmpty())

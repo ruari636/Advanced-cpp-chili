@@ -55,12 +55,16 @@ public:
 	}
 	Vec2 GetTL() const { return TLBR[0]; }
 	Vec2 GetBR() const { return TLBR[1]; }
+	virtual float GetRad() const { return 0.0f; }
 };
 
 class star : public shape
 {
+	float radius = 0.0f;
 public:
 	star(float outerRad, float innerRad, int flares)
+		:
+		radius(outerRad)
 	{
 		std::vector<Vec2> star;
 		star.reserve(flares * 2);
@@ -72,4 +76,5 @@ public:
 		}
 		shape::overWrite(star);
 	}
+	float GetRad() const override { return radius; }
 };

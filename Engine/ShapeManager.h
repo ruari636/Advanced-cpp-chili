@@ -7,22 +7,26 @@ class Drawer
 {
 	Vec2 TL;
 	Vec2 BR;
-	shape s;
 	Color c;
 	Vec2 pos = { 0.0f,0.0f };
 	Vec2 deltaOrigin = { 0.0f,0.0f };
 	Vec2 scaleCenter = { 1.0f,1.0f };
 	Vec2 scaleOrigin = { 1.0f,1.0f };
-	std::vector<Vec2> Vertices = s.GetShape();
+	std::vector<Vec2> Vertices;
 	std::vector<std::function<void(float deltaT, Drawer& d)>> effects;
+
+protected:
+	std::shared_ptr<shape> s;
+
 public:
-	Drawer(shape s, Color c)
+	Drawer(std::shared_ptr<shape> s, Color c)
 		:
 		c(c),
 		s(s)
 	{
-		TL = s.GetTL();
-		BR = s.GetBR();
+		TL = s->GetTL();
+		BR = s->GetBR();
+		Vertices = s->GetShape();
 	}
 	Vec2 GetPos() { return pos; }
 	Vec2 GetScale() { return scaleCenter; }
@@ -62,9 +66,9 @@ public:
 	void ChangeColor(Color c_in) { c = c_in; }
 	void Refresh()
 	{
-		Vertices = s.GetShape();
-		TL = s.GetTL();
-		BR = s.GetBR();
+		Vertices = s->GetShape();
+		TL = s->GetTL();
+		BR = s->GetBR();
 		for (Vec2& v : Vertices)
 		{
 			v *= scaleCenter;
@@ -111,6 +115,7 @@ public:
 	virtual void Update(float deltaT)
 	{
 	}
+	const shape* GetShape() const { return s.get(); }
 };
 
 class Effect : public Drawer
@@ -129,7 +134,7 @@ class Effect : public Drawer
 	float minScale = 0.5f;
 
 public:
-	Effect(shape s, Color c, Color c2, float minScale, float timeToChange, float timeToShrink)
+	Effect(std::shared_ptr<shape> s, Color c, Color c2, float minScale, float timeToChange, float timeToShrink)
 		:
 		Drawer(s, c),
 		c1(c),
@@ -162,7 +167,7 @@ public:
 
 		star Star = star(outerRad(rng), innerRad(rng), prongs(rng));
 		float min = zeroToOne(rng);
-		return Effect(Star, c1, c2, min, timeToChange(rng), timeToChange(rng));
+		return Effect(std::make_shared<star>(Star), c1, c2, min, timeToChange(rng), timeToChange(rng));
 	}
 	void Update(float deltaT) override
 	{
@@ -202,7 +207,7 @@ public:
 
 struct MoveSpace
 {
-	std::vector<std::unique_ptr<Drawer>> shapes;
+	std::vector<std::shared_ptr<Drawer>> shapes;
 	void Move(Vec2 deltaPos)
 	{
 		pos += deltaPos;
@@ -240,9 +245,9 @@ struct MoveSpace
 			drawer->Draw(gfx);
 		}
 	}
-	void Add(std::unique_ptr<Drawer> d)
+	void Add(std::shared_ptr<Drawer> d)
 	{
-		shapes.push_back(std::move(d));
+		shapes.push_back(d);
 	}
 	void SetOrigin(Vec2 newPos)
 	{
