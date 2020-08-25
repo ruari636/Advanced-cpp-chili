@@ -27,27 +27,7 @@ Game::Game( MainWindow& wnd )
 	gfx( wnd ),
     rng(std::random_device()())
 {
-    std::uniform_real_distribution<float>innerRad(15.0f, minStarRad);
-    std::uniform_real_distribution<float>outerRad(minStarRad, starRad);
-    std::uniform_int_distribution<int>prongs(3, 12);
-    std::uniform_int_distribution<int>hue(0, 255);
-    Vec2 loc{ -(starRad) * width + gfx.ScreenWidth,
-        -(starRad - minStarRad) * height + gfx.ScreenHeight};
-    float curStarRad = 0.0f;
-
-    for (int x = 0; x < width; x++)
-    {
-        loc.y = -starRad * height + gfx.ScreenHeight;
-        for (int y = 0; y < height; y++)
-        {
-            Effect Star(Effect::RandomStar(starRad));
-            curStarRad = Star.GetShape()->GetRad();
-            Star.MoveTo(loc + Vec2{ 0, curStarRad });
-            mp.Add(std::make_unique<Effect>(Star));
-            loc.y += curStarRad * 2;
-        }
-        loc.x += starRad * 2;
-    }
+    mp.Add(Plank({ 200.0f,300.0f }, { 600.0f,300.0f }, 5.0f, Colors::Yellow));
 }
 
 void Game::Go()
@@ -61,6 +41,34 @@ void Game::Go()
 void Game::UpdateModel()
 {
     float deltaT = ft.Mark();
+    clock += deltaT;
+    const auto newEnd = std::remove_if(mp.AcessMembers().begin() + 1, mp.AcessMembers().end(),
+        [](std::shared_ptr<Drawer> d)
+        {
+            return !d->InView();
+        });
+    mp.AcessMembers().erase(newEnd, mp.AcessMembers().end());
+    if (clock > 2.0f)
+    {
+        float xv = vx(rng);
+        float yv = -sqrt(100 * 100 - xv * xv);
+        /*if (type(rng) == 1)
+        {
+            yv = -yv;
+        }*/
+        //mp.Add(Ball(36.0f, Vec2((float)width(rng), (float)height(rng)), Vec2(xv,yv)));
+        mp.Add(Ball(36.0f, Vec2(400.0f, 400.0f), Vec2(xv, yv)));
+        clock -= 2.0f;
+    }
+    if (wnd.kbd.KeyIsPressed(VK_DOWN))
+    {
+        mp.AcessMembers()[0]->Move({ 0.0f, 2.0f });
+    }
+    if (wnd.kbd.KeyIsPressed(VK_UP))
+    {
+        mp.AcessMembers()[0]->Move({ 0.0f, -2.0f });
+    }
+
     if (wnd.mouse.LeftIsPressed())
     {
         if (mouseIsPressed)
@@ -81,7 +89,7 @@ void Game::UpdateModel()
         mouseIsPressed = false;
     }
     
-    while (!wnd.mouse.IsEmpty())
+    /*while (!wnd.mouse.IsEmpty())
     {
         const auto e = wnd.mouse.Read();
         if (e.GetType() == Mouse::Event::Type::WheelDown)
@@ -94,14 +102,12 @@ void Game::UpdateModel()
             mp.SetOrigin(Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
             mp.Scale(1.05f);
         }
-    }
+    }*/
 
     mp.Update(deltaT);
 }
 
 void Game::ComposeFrame()
 {
-    Vec2 pos((float)wnd.mouse.GetPosX(),(float)wnd.mouse.GetPosY());
     mp.Draw(gfx);
-    gfx.DrawLine({ 400.0f,300.0f }, pos, Colors::Blue);
 }

@@ -142,6 +142,7 @@
     <ClInclude Include="Colors.h" />
     <ClInclude Include="COMInitializer.h" />
     <ClInclude Include="FrameTimer.h" />
+    <ClInclude Include="LineMath.h" />
     <ClInclude Include="ShapeManager.h" />
     <ClInclude Include="DXErr.h" />
     <ClInclude Include="Game.h" />

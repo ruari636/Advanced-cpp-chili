@@ -34,12 +34,7 @@ class shape
 		TLBR[0] = TL;
 		TLBR[1] = BR;
 	}
-protected:
-	void overWrite(std::vector<Vec2> shape_in)
-	{
-		Vertices = shape_in;
-		saveTLBR();
-	}
+
 public:
 	Vec2 TLBR[2];
 	shape() = default;
@@ -56,6 +51,11 @@ public:
 	Vec2 GetTL() const { return TLBR[0]; }
 	Vec2 GetBR() const { return TLBR[1]; }
 	virtual float GetRad() const { return 0.0f; }
+	void overWrite(std::vector<Vec2> shape_in)
+	{
+		Vertices = shape_in;
+		saveTLBR();
+	}
 };
 
 class star : public shape

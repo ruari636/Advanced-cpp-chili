@@ -49,11 +49,11 @@ private:
 	FrameTimer ft;
 	MoveSpace mp;
 	std::mt19937 rng;
-	static constexpr float starRad = 420.0f;
-	static constexpr float minStarRad = 120.0f;
-	static constexpr int height = 10;
-	static constexpr int width = 20;
-	float runTime = 0.0f;
+	std::uniform_int_distribution<int> width{ 0,800 };
+	std::uniform_int_distribution<int> type{ 0,1 };
+	std::uniform_int_distribution<int> height{ 0,600 };
+	std::uniform_real_distribution<float> vx{ -100.0f,100.0f };
+	float clock = 0.0f;
 
 	bool mouseIsPressed;
 	Vec2 prevMousePos;

@@ -14,12 +14,13 @@ class Drawer
 	Vec2 scaleOrigin = { 1.0f,1.0f };
 	std::vector<Vec2> Vertices;
 	std::vector<std::function<void(float deltaT, Drawer& d)>> effects;
+	bool inView;
 
 protected:
 	std::shared_ptr<shape> s;
 
 public:
-	Drawer(std::shared_ptr<shape> s, Color c)
+	Drawer(std::shared_ptr<shape> s, const Color c)
 		:
 		c(c),
 		s(s)
@@ -30,7 +31,7 @@ public:
 	}
 	Vec2 GetPos() { return pos; }
 	Vec2 GetScale() { return scaleCenter; }
-	void Move(Vec2 deltaPos) 
+	virtual void Move(Vec2 deltaPos) 
 	{ 
 		pos += deltaPos;
 	}
@@ -90,7 +91,8 @@ public:
 	{
 		Vec2 curTL = TL + pos;
 		Vec2 curBR = BR + pos;
-		if ((curTL.x < gfx.ScreenWidth && curTL.y < gfx.ScreenHeight) && (curBR.x > 0 && curBR.y > 0))
+		inView = (curTL.x < gfx.ScreenWidth && curTL.y < gfx.ScreenHeight) && (curBR.x > 0 && curBR.y > 0);
+		if (inView)
 		{
 			for (auto cur = Vertices.begin() + 1; cur != Vertices.end(); cur++)
 				gfx.DrawLine(*(cur - 1) + pos, *cur + pos, c);
@@ -104,6 +106,7 @@ public:
 		deltaOrigin += (deltaPos / scaleOrigin);
 		Refresh();
 	}
+	bool InView() { return inView; }
 	Color& GetCol(){ return c; }
 	void OverlayEffect(std::function<void(float deltaT, Drawer& d)> e)
 	{
@@ -201,6 +204,51 @@ public:
 	}
 };
 
+class Plank : public Drawer
+{
+	std::vector<Vec2> plank;
+
+public:
+	Plank(Vec2 anchor, Vec2 moveable, float thickness, const Color c)
+		:
+		Drawer(std::make_shared<shape>(), c)
+	{
+		MoveTo(anchor);
+		moveable -= anchor;
+		plank.push_back({0.0f,0.0f});
+		plank.push_back(moveable);
+		plank.push_back(Vec2(moveable.x, moveable.y + thickness));
+		plank.push_back(Vec2(0.0f, thickness));
+		s->overWrite(plank);
+		Refresh();
+	}
+	void Move(Vec2 deltaPos) override
+	{
+		plank[1] += deltaPos;
+		plank[2] += deltaPos;
+		s->overWrite(plank);
+		Refresh();
+	}
+};
+
+class Ball : public Drawer
+{
+	Vec2 vel;
+
+public:
+	Ball(float radius, Vec2 loc, Vec2 vel, Color c = Colors::Red)
+		:
+		vel(vel),
+		Drawer(std::make_shared<star>(star(radius, radius, (std::min)(int(radius), 36))), c)
+	{
+		MoveTo(loc);
+	}
+	void Update(float deltaT) override
+	{
+		Move(vel * deltaT);
+	}
+};
+
 struct MoveSpace
 {
 	std::vector<std::shared_ptr<Drawer>> shapes;
@@ -245,6 +293,11 @@ struct MoveSpace
 	{
 		shapes.push_back(d);
 	}
+	template <typename T>
+	void Add(T d)
+	{
+		shapes.push_back(std::make_shared<T>(d));
+	}
 	void SetOrigin(Vec2 newPos)
 	{
 		pos = newPos;
@@ -259,6 +312,14 @@ struct MoveSpace
 		{
 			s->Update(deltaT);
 		}
+	}
+	std::vector<std::shared_ptr<Drawer>>& AcessMembers()
+	{
+		return shapes;
+	}
+	const std::vector<std::shared_ptr<Drawer>>& AcessMembers() const
+	{
+		return shapes;
 	}
 
 private:
