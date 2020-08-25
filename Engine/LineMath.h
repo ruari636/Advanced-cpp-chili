@@ -14,5 +14,5 @@ T GetDistSq(const _Vec2<T>& vert1, const _Vec2<T>& vert2, const _Vec2<T>& point)
 	T c = vert1.y - (a * vert1.x);
 	T x = point.x;
 	T y = point.y;
-	return (square(a * x - y + c)) / (square(a) + square(b));
+	return (square(a * x - y + c)) / (square(a) + (T)1);
 }

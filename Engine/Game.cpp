@@ -104,6 +104,20 @@ void Game::UpdateModel()
         }
     }*/
 
+    std::pair<Vec2,Vec2> plank = 
+        std::static_pointer_cast<Plank>(*mp.AcessMembers().begin())->GetCorners();
+
+    for (auto d = mp.AcessMembers().begin() + 1; d != mp.AcessMembers().end(); d++)
+    {
+        std::shared_ptr<Ball> b = std::static_pointer_cast<Ball>(*d);
+        Vec2 pos = b->GetPos();
+        float radius = b->GetRadius();
+        if (square(radius) > GetDistSq(plank.first, plank.second, pos))
+        {
+            b->ChangeColor(Colors::Blue);
+        }
+    }
+
     mp.Update(deltaT);
 }
 

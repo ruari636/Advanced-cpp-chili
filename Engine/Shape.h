@@ -44,7 +44,7 @@ public:
 	{
 		saveTLBR();
 	}
-	std::vector<Vec2> GetShape()
+	std::vector<Vec2> GetShape() const
 	{
 		return Vertices;
 	}

@@ -26,6 +26,7 @@
 #include "ShapeManager.h"
 #include "FrameTimer.h"
 #include "Shape.h"
+#include "LineMath.h"
 #include <random>
 
 class Game

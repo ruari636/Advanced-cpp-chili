@@ -229,23 +229,33 @@ public:
 		s->overWrite(plank);
 		Refresh();
 	}
+	std::pair<Vec2, Vec2> GetCorners()
+	{
+		return { GetPos(), plank[1] + GetPos() };
+	}
 };
 
 class Ball : public Drawer
 {
 	Vec2 vel;
+	float radius;
 
 public:
 	Ball(float radius, Vec2 loc, Vec2 vel, Color c = Colors::Red)
 		:
 		vel(vel),
-		Drawer(std::make_shared<star>(star(radius, radius, (std::min)(int(radius), 36))), c)
+		Drawer(std::make_shared<star>(star(radius, radius, (std::min)(int(radius), 36))), c),
+		radius(radius)
 	{
 		MoveTo(loc);
 	}
 	void Update(float deltaT) override
 	{
 		Move(vel * deltaT);
+	}
+	float GetRadius()
+	{
+		return radius;
 	}
 };
 
