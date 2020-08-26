@@ -253,9 +253,17 @@ public:
 	{
 		Move(vel * deltaT);
 	}
-	float GetRadius()
+	float GetRadius() const
 	{
 		return radius;
+	}
+	Vec2 GetVel() const
+	{
+		return vel;
+	}
+	void SetVel(Vec2 vel_in)
+	{
+		vel = vel_in;
 	}
 };
 

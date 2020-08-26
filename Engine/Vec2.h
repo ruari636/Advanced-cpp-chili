@@ -42,13 +42,17 @@ public:
 	{
 		return{ (T2)x,(T2)y };
 	}
-	T		LenSq() const
+	T LenSq() const
 	{
-		return sq( *this );
+		return x * x + y * y;
 	}
-	T		Len() const
+	T Len() const
 	{
 		return sqrt( LenSq() );
+	}
+	T GetSharedLen(const _Vec2& rhs) const
+	{
+		return x * rhs.x + y * rhs.y;
 	}
 	_Vec2&	Normalize()
 	{
@@ -63,6 +67,7 @@ public:
 		norm.Normalize();
 		return norm;
 	}
+
 	_Vec2	operator-() const
 	{
 		return _Vec2(-x, -y);

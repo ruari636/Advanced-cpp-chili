@@ -106,6 +106,7 @@ void Game::UpdateModel()
 
     std::pair<Vec2,Vec2> plank = 
         std::static_pointer_cast<Plank>(*mp.AcessMembers().begin())->GetCorners();
+    Vec2 plankDir = (plank.first - plank.second).GetNormalized();
 
     for (auto d = mp.AcessMembers().begin() + 1; d != mp.AcessMembers().end(); d++)
     {
@@ -114,6 +115,9 @@ void Game::UpdateModel()
         float radius = b->GetRadius();
         if (square(radius) > GetDistSq(plank.first, plank.second, pos))
         {
+            Vec2 dir = b->GetVel().GetNormalized();
+            Vec2 newDirNormalised = GetReboundDir(dir, plankDir);
+            b->SetVel(newDirNormalised * (b->GetVel().Len()));
             b->ChangeColor(Colors::Blue);
         }
     }
