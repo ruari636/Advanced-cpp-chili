@@ -54,6 +54,13 @@ public:
 	{
 		return x * rhs.x + y * rhs.y;
 	}
+	_Vec2& SetLen(T newLen)
+	{
+		T length = Len();
+		x *= newLen / length;
+		y *= newLen / length;
+		return *this;
+	}
 	_Vec2&	Normalize()
 	{
 		const T length = Len();

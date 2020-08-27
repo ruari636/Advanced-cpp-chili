@@ -56,18 +56,33 @@ _Vec2<T> GetDistVec(const _Vec2<T>& vert1, const _Vec2<T>& vert2, const _Vec2<T>
 		T y;
 		if (a != 0.0f)
 		{
-			T newGrad = (T)1 / a;
-			T newC = point.y - newGrad * point.x;
-			x = -(sqrt(-square(newC) + lineLenSq * square(newGrad) + lineLenSq) - newC * newGrad)
-				/ (square(newGrad) + 1);
-			y = sqrt(lineLenSq - square(x));
+			T len = sqrt(lineLenSq);
+			T newGrad = -(T)1 / a; //std::abs(-(T)1 / a);
+			T newC = point.y - (newGrad * point.x);
+			_Vec2<T> dir = _Vec2<T>((T)1, newGrad);
+			dir.SetLen(len);
+			if (point.x * a + c < point.y && dir.y < 0.0f)
+			{
+				dir.y = -dir.y;
+				dir.x = -dir.x;
+			}
+			else if (point.x * a + c > point.y && dir.y > 0.0f)
+			{
+				dir.y = -dir.y;
+				dir.x = -dir.x;
+			}
+			return dir;
 		}
 		else
 		{
 			y = sqrt(lineLenSq);
+			if (point.x * a + c > point.y)
+			{
+				y = -y;
+			}
 			x = (T)0;
+			return _Vec2<T>(x, y);
 		}
-		return _Vec2<T>(x, y);
 	}
 }
 

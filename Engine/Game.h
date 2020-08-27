@@ -57,6 +57,7 @@ private:
 	float clock = 0.0f;
 
 	bool mouseIsPressed;
+	bool other = false;
 	Vec2 prevMousePos;
 	/********************************/
 };

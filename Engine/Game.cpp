@@ -48,16 +48,20 @@ void Game::UpdateModel()
             return !d->InView();
         });
     mp.AcessMembers().erase(newEnd, mp.AcessMembers().end());
-    if (clock > 2.0f)
+    if (clock > 0.5f)
     {
         float xv = vx(rng);
         float yv = -sqrt(100 * 100 - xv * xv);
-        /*if (type(rng) == 1)
+        
+        if (other)
         {
-            yv = -yv;
-        }*/
-        //mp.Add(Ball(36.0f, Vec2((float)width(rng), (float)height(rng)), Vec2(xv,yv)));
-        mp.Add(Ball(36.0f, Vec2(400.0f, 400.0f), Vec2(xv, yv)));
+            mp.Add(Ball(36.0f, Vec2(400.0f, 200.0f), Vec2(-xv, -yv)));
+        }
+        else
+        {
+            mp.Add(Ball(36.0f, Vec2(400.0f, 400.0f), Vec2(xv, yv)));
+        }
+        other = !other;
         clock -= 2.0f;
     }
     if (wnd.kbd.KeyIsPressed(VK_DOWN))
@@ -89,6 +93,7 @@ void Game::UpdateModel()
         mouseIsPressed = false;
     }
     
+    //Scrolling, doesn't scale the balls yet
     /*while (!wnd.mouse.IsEmpty())
     {
         const auto e = wnd.mouse.Read();
@@ -113,18 +118,33 @@ void Game::UpdateModel()
         std::shared_ptr<Ball> b = std::static_pointer_cast<Ball>(*d);
         Vec2 pos = b->GetPos();
         float radius = b->GetRadius();
+
+        //Commemt if not wanted
+        Vec2 test = GetDistVec(plank.first, plank.second, pos);
+        Vec2 t2 = pos - test;
+        gfx.DrawLine(pos, t2, Colors::Green);
+        gfx.DrawLine(pos, pos + b->GetVel().SetLen(radius), Colors::Yellow);
+        ///////////////////////
+
         float distFromPlankSqr = GetDistSq(plank.first, plank.second, pos);
         if (square(radius) > distFromPlankSqr)
         {
             float depthIntoPlank = std::sqrt(square(radius) - distFromPlankSqr);
             Vec2 dir = b->GetVel().GetNormalized();
-            b->Move(dir * depthIntoPlank);
             Vec2 pToBall = GetDistVec(plank.first, plank.second, pos);
-            bool ballMovingToPlank = std::signbit(pToBall.x) != std::signbit(dir.x) ||
-                std::signbit(pToBall.y) != std::signbit(dir.y); //TO FIX
+            Vec2 oldPToBall = pToBall;
+            pToBall.SetLen(radius);
+            b->Move(pToBall - oldPToBall);
+            //
+            float towardFirst = dir.GetSharedLen(plank.first - pos);
+            float towardSecond = dir.GetSharedLen(plank.second - pos);
+            float towardPlank = dir.GetSharedLen(-pToBall);
+            //
+
+            bool ballMovingToPlank = (dir.GetSharedLen(plank.first - pos) > 0.0f ||
+                dir.GetSharedLen(plank.second - pos) > 0.0f) && dir.GetSharedLen(-pToBall) > 0.0f;
             if (ballMovingToPlank)
             {
-                b->Move(-dir * depthIntoPlank * 2.0f);
                 Vec2 newDirNormalised = GetReboundDir(dir, plankDir);
                 b->SetVel(newDirNormalised * (b->GetVel().Len()));
                 b->ChangeColor(Colors::Blue);
