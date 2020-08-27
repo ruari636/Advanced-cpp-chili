@@ -119,7 +119,7 @@ public:
 			e(deltaT, *this);
 		}
 	}
-	virtual void Update(float deltaT)
+	virtual void Update(float deltaT, const std::vector<std::shared_ptr<Drawer>> shape)
 	{
 	}
 	const shape* GetShape() const { return s.get(); }
@@ -179,7 +179,7 @@ public:
 		float min = zeroToOne(rng);
 		return Effect(std::make_shared<star>(Star), c1, c2, min, timeToChange(rng) * 5.0f, timeToChange(rng));
 	}
-	void Update(float deltaT) override
+	void Update(float deltaT, const std::vector<std::shared_ptr<Drawer>> shape) override
 	{
 		Color& cur = Drawer::GetCol();
 		float changeAmount = deltaT / timeToChange;
@@ -222,7 +222,7 @@ public:
 		s->overWrite(plank);
 		Refresh();
 	}
-	void Move(Vec2 deltaPos) override
+	void MoveMoveable(Vec2 deltaPos)
 	{
 		plank[1] += deltaPos;
 		plank[2] += deltaPos;
@@ -249,7 +249,7 @@ public:
 	{
 		MoveTo(loc);
 	}
-	void Update(float deltaT) override
+	void Update(float deltaT, const std::vector<std::shared_ptr<Drawer>> collisions) override
 	{
 		Move(vel * deltaT);
 	}
@@ -270,6 +270,7 @@ public:
 struct MoveSpace
 {
 	std::vector<std::shared_ptr<Drawer>> shapes;
+	std::vector<std::pair<std::shared_ptr<Drawer>, std::shared_ptr<Drawer>>> collisions;
 	void Move(Vec2 deltaPos)
 	{
 		pos += deltaPos;
@@ -328,9 +329,20 @@ struct MoveSpace
 	{
 		for (auto& s : shapes)
 		{
-			s->Update(deltaT);
+			s->Update(deltaT, shapes);
 		}
 	}
+	/*void RegisterCollision(std::shared_ptr<Drawer> s1, std::shared_ptr<Drawer> s2)
+	{
+		std::pair<std::shared_ptr<Drawer>, std::shared_ptr<Drawer>> pair{ s1,s2 };
+		std::pair<std::shared_ptr<Drawer>, std::shared_ptr<Drawer>> pairRev{ s2,s1 };
+		if (Colliding(s1, s2) &&
+			(collisions.size() > 0 || std::find(collisions.begin(), collisions.end(), pair) != collisions.end()
+			|| std::find(collisions.begin(), collisions.end(), pairRev) != collisions.end()))
+		{
+			collisions.emplace_back(s1, s2);
+		}
+	}*/
 	std::vector<std::shared_ptr<Drawer>>& AcessMembers()
 	{
 		return shapes;

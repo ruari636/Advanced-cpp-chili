@@ -62,11 +62,11 @@ void Game::UpdateModel()
     }
     if (wnd.kbd.KeyIsPressed(VK_DOWN))
     {
-        mp.AcessMembers()[0]->Move({ 0.0f, 2.0f });
+        std::static_pointer_cast<Plank>(mp.AcessMembers()[0])->MoveMoveable({ 0.0f,2.0f });
     }
     if (wnd.kbd.KeyIsPressed(VK_UP))
     {
-        mp.AcessMembers()[0]->Move({ 0.0f, -2.0f });
+        std::static_pointer_cast<Plank>(mp.AcessMembers()[0])->MoveMoveable({ 0.0f, -2.0f });
     }
 
     if (wnd.mouse.LeftIsPressed())
@@ -113,12 +113,22 @@ void Game::UpdateModel()
         std::shared_ptr<Ball> b = std::static_pointer_cast<Ball>(*d);
         Vec2 pos = b->GetPos();
         float radius = b->GetRadius();
-        if (square(radius) > GetDistSq(plank.first, plank.second, pos))
+        float distFromPlankSqr = GetDistSq(plank.first, plank.second, pos);
+        if (square(radius) > distFromPlankSqr)
         {
+            float depthIntoPlank = std::sqrt(square(radius) - distFromPlankSqr);
             Vec2 dir = b->GetVel().GetNormalized();
-            Vec2 newDirNormalised = GetReboundDir(dir, plankDir);
-            b->SetVel(newDirNormalised * (b->GetVel().Len()));
-            b->ChangeColor(Colors::Blue);
+            b->Move(dir * depthIntoPlank);
+            Vec2 pToBall = GetDistVec(plank.first, plank.second, pos);
+            bool ballMovingToPlank = std::signbit(pToBall.x) != std::signbit(dir.x) ||
+                std::signbit(pToBall.y) != std::signbit(dir.y); //TO FIX
+            if (ballMovingToPlank)
+            {
+                b->Move(-dir * depthIntoPlank * 2.0f);
+                Vec2 newDirNormalised = GetReboundDir(dir, plankDir);
+                b->SetVel(newDirNormalised * (b->GetVel().Len()));
+                b->ChangeColor(Colors::Blue);
+            }
         }
     }
 
