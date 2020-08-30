@@ -2,6 +2,7 @@
 #include "Shape.h"
 #include <memory>
 #include <functional>
+#include "ChiliMath.h"
 
 class Drawer
 {
@@ -12,12 +13,15 @@ class Drawer
 	Vec2 deltaOrigin = { 0.0f,0.0f };
 	Vec2 scaleCenter = { 1.0f,1.0f };
 	Vec2 scaleOrigin = { 1.0f,1.0f };
+	Vec2 rPos = pos;
 	std::vector<Vec2> Vertices;
 	std::vector<std::function<void(float deltaT, Drawer& d)>> effects;
-	bool inView;
+	bool notInView;
 
 protected:
 	std::shared_ptr<shape> s;
+	float rotation = 0.0f;
+	float rotationOrigin = 0.0f;
 
 public:
 	Drawer(std::shared_ptr<shape> s, const Color c)
@@ -25,19 +29,23 @@ public:
 		c(c),
 		s(s)
 	{
-		TL = s->GetTL();
-		BR = s->GetBR();
-		Vertices = s->GetShape();
+		if (s->GetShape().size() > 0)
+		{
+			Refresh();
+		}
 	}
-	Vec2 GetPos() { return pos; }
+	Vec2 GetPos() { return rPos; }
+	Vec2 GetPosVert(int index) { return Vertices[index] + rPos; }
 	Vec2 GetScale() { return scaleCenter; }
 	virtual void Move(Vec2 deltaPos) 
 	{ 
 		pos += deltaPos;
+		Refresh();
 	}
 	void MoveTo(Vec2 newPos) 
 	{
 		pos = newPos;
+		Refresh();
 	}
 	void Scale(float deltaScale) {
 		scaleOrigin *= deltaScale; 
@@ -69,34 +77,71 @@ public:
 		SetScaleCenter({ Scale, Scale });
 	}
 	void ChangeColor(Color c_in) { c = c_in; }
+	virtual void Rotate(float theta)
+	{
+		rotation += theta;
+		while (rotation > (2 * PI))
+		{
+			rotation -= (2 * PI);
+		}
+		Refresh();
+	}
+	virtual void RotateCenter(float theta)
+	{
+		rotationOrigin += theta;
+		while (rotationOrigin > (2 * PI))
+		{
+			rotationOrigin -= (2 * PI);
+		}
+		Refresh();
+	}
 	void Refresh()
 	{
 		Vertices = s->GetShape();
-		TL = s->GetTL();
-		BR = s->GetBR();
-		for (Vec2& v : Vertices)
+
+		float sinTheta = sin(rotation);
+		float cosTheta = cos(rotation);
+
+		float sinO = sin(rotationOrigin);
+		float cosO = cos(rotationOrigin);
+
+		auto transform = [&](Vec2& cur)
 		{
-			v *= scaleCenter;
-			v -= deltaOrigin;
-			v *= scaleOrigin;
+			cur.Rotate(sinTheta, cosTheta);
+			cur *= scaleCenter;
+			cur -= deltaOrigin;
+			cur *= scaleOrigin;
+			cur.Rotate(sinO, cosO);
+		};
+		rPos = pos.GetRotated(rotationOrigin);
+
+		if (Vertices.size() > 0)
+		{
+			TL = Vertices[0];
+			BR = Vertices[0];
+			for (Vec2& v : Vertices)
+			{
+				transform(v);
+				TL.x = std::min(TL.x, v.x);
+				TL.y = std::min(TL.y, v.y);
+				BR.x = std::max(BR.x, v.x);
+				BR.y = std::max(BR.y, v.y);
+			}
 		}
-		TL *= scaleCenter;
-		TL -= deltaOrigin;
-		TL *= scaleOrigin;
-		BR *= scaleCenter;
-		BR -= deltaOrigin;
-		BR *= scaleOrigin;
 	}
 	void Draw(Graphics& gfx)
 	{
-		Vec2 curTL = TL + pos;
-		Vec2 curBR = BR + pos;
-		inView = (curTL.x < gfx.ScreenWidth && curTL.y < gfx.ScreenHeight) && (curBR.x > 0 && curBR.y > 0);
-		if (inView)
+		float sinO = sin(rotationOrigin);
+		float cosO = cos(rotationOrigin);
+
+		Vec2 curTL = TL + rPos;
+		Vec2 curBR = BR + rPos;
+		notInView = (curTL.x > gfx.ScreenWidth || curTL.y > gfx.ScreenHeight) || (curBR.x < 0 || curBR.y < 0);
+		if (!notInView)
 		{
 			for (auto cur = Vertices.begin() + 1; cur != Vertices.end(); cur++)
-				gfx.DrawLine(*(cur - 1) + pos, *cur + pos, c);
-			gfx.DrawLine(*(Vertices.end() - 1) + pos, *Vertices.begin() + pos, c);
+				gfx.DrawLine(*(cur - 1) + rPos, *cur + rPos, c);
+			gfx.DrawLine(*(Vertices.end() - 1) + rPos, *Vertices.begin() + rPos, c);
 		}
 	}
 	void MoveOriginTo(Vec2 newPos) 
@@ -106,7 +151,7 @@ public:
 		deltaOrigin += (deltaPos / scaleOrigin);
 		Refresh();
 	}
-	bool InView() { return inView; }
+	bool InView() { return !notInView; }
 	Color& GetCol(){ return c; }
 	void OverlayEffect(std::function<void(float deltaT, Drawer& d)> e)
 	{
@@ -229,9 +274,14 @@ public:
 		s->overWrite(plank);
 		Refresh();
 	}
+	void Rotate(float theta) override
+	{
+		Drawer::Rotate(theta);
+		plank = s->GetShape();
+	}
 	std::pair<Vec2, Vec2> GetCorners()
 	{
-		return { GetPos(), plank[1] + GetPos() };
+		return { GetPos(), GetPosVert(1)};
 	}
 };
 
@@ -264,6 +314,11 @@ public:
 	void SetVel(Vec2 vel_in)
 	{
 		vel = vel_in;
+	}
+	void RotateCenter(float theta) override
+	{
+		Drawer::RotateCenter(theta);
+		vel.Rotate(theta);
 	}
 };
 
@@ -301,6 +356,14 @@ struct MoveSpace
 			drawer->Scale(deltaScale);
 		}
 	}
+	void Rotate(float theta)
+	{
+		for (auto& s : shapes)
+		{
+			s->RotateCenter(theta);
+			s->Refresh();
+		}
+	}
 	void Draw(Graphics& gfx)
 	{
 		for (auto& drawer : shapes)
@@ -332,17 +395,6 @@ struct MoveSpace
 			s->Update(deltaT, shapes);
 		}
 	}
-	/*void RegisterCollision(std::shared_ptr<Drawer> s1, std::shared_ptr<Drawer> s2)
-	{
-		std::pair<std::shared_ptr<Drawer>, std::shared_ptr<Drawer>> pair{ s1,s2 };
-		std::pair<std::shared_ptr<Drawer>, std::shared_ptr<Drawer>> pairRev{ s2,s1 };
-		if (Colliding(s1, s2) &&
-			(collisions.size() > 0 || std::find(collisions.begin(), collisions.end(), pair) != collisions.end()
-			|| std::find(collisions.begin(), collisions.end(), pairRev) != collisions.end()))
-		{
-			collisions.emplace_back(s1, s2);
-		}
-	}*/
 	std::vector<std::shared_ptr<Drawer>>& AcessMembers()
 	{
 		return shapes;

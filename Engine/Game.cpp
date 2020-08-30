@@ -62,7 +62,7 @@ void Game::UpdateModel()
             mp.Add(Ball(36.0f, Vec2(400.0f, 400.0f), Vec2(xv, yv)));
         }
         other = !other;
-        clock -= 2.0f;
+        clock -= 0.5f;
     }
     if (wnd.kbd.KeyIsPressed(VK_DOWN))
     {
@@ -71,6 +71,14 @@ void Game::UpdateModel()
     if (wnd.kbd.KeyIsPressed(VK_UP))
     {
         std::static_pointer_cast<Plank>(mp.AcessMembers()[0])->MoveMoveable({ 0.0f, -2.0f });
+    }
+    if (wnd.kbd.KeyIsPressed(VK_LEFT))
+    {
+        mp.Rotate(deltaT);
+    }
+    if (wnd.kbd.KeyIsPressed(VK_RIGHT))
+    {
+        mp.Rotate(-deltaT);
     }
 
     if (wnd.mouse.LeftIsPressed())
