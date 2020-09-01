@@ -49,7 +49,8 @@ private:
 	FrameTimer ft;
 	MoveSpace mp;
 	std::mt19937 rng;
-	static constexpr float starRad = 420.0f;
+	//Effect test;
+	static constexpr float starRad = 150.0f;
 	static constexpr float minStarRad = 120.0f;
 	static constexpr int height = 10;
 	static constexpr int width = 20;

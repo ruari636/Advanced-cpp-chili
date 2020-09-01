@@ -21,11 +21,13 @@
 #include "MainWindow.h"
 #include "Game.h"
 
-Game::Game( MainWindow& wnd )
-	:
-	wnd( wnd ),
-	gfx( wnd ),
+Game::Game(MainWindow& wnd)
+    :
+    wnd(wnd),
+    gfx(wnd),
     rng(std::random_device()())
+    //test(std::make_shared<star>(star(120.0f, 360.0f, 12)), 
+        //Colors::Red, Colors::Cyan, 0.5f, 3.0f, 3.0f)
 {
     std::uniform_real_distribution<float>innerRad(15.0f, minStarRad);
     std::uniform_real_distribution<float>outerRad(minStarRad, starRad);
@@ -35,6 +37,8 @@ Game::Game( MainWindow& wnd )
         -(starRad - minStarRad) * height + gfx.ScreenHeight};
     float curStarRad = 0.0f;
 
+    //test.MoveTo({ 100.0f,100.0f });
+
     for (int x = 0; x < width; x++)
     {
         loc.y = -starRad * height + gfx.ScreenHeight;
@@ -43,7 +47,7 @@ Game::Game( MainWindow& wnd )
             Effect Star(Effect::RandomStar(starRad));
             curStarRad = Star.GetShape()->GetRad();
             Star.MoveTo(loc + Vec2{ 0, curStarRad });
-            mp.Add(std::make_unique<Effect>(Star));
+            mp.Add(Star);
             loc.y += curStarRad * 2;
         }
         loc.x += starRad * 2;
@@ -86,16 +90,20 @@ void Game::UpdateModel()
         const auto e = wnd.mouse.Read();
         if (e.GetType() == Mouse::Event::Type::WheelDown)
         {
-            mp.SetOrigin(Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
-            mp.Scale(0.95f);
+            mp.ScaleFrom(0.95f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
+            //test.ScaleFrom(0.95f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
         }
         else if (e.GetType() == Mouse::Event::Type::WheelUp)
         {
-            mp.SetOrigin(Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
-            mp.Scale(1.05f);
+            mp.ScaleFrom(1.05f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
         }
     }
-
+    if (wnd.kbd.KeyIsPressed(VK_RIGHT))
+    {
+        mp.RotateCenter(PI * 2.0f * deltaT, //{ 0.0f,0.0f });
+            { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
+        //test.RotateCenter(PI * 2.0f * deltaT, { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
+    }
     mp.Update(deltaT);
 }
 
@@ -103,5 +111,9 @@ void Game::ComposeFrame()
 {
     Vec2 pos((float)wnd.mouse.GetPosX(),(float)wnd.mouse.GetPosY());
     mp.Draw(gfx);
-    gfx.DrawLine({ 400.0f,300.0f }, pos, Colors::Blue);
+    //test.Draw(gfx);
+    /*for (auto& s : mp.AcessMembers())
+    {
+        gfx.DrawLine({ 400.0,300.0 }, s->GetPos(), Colors::Red);
+    }*/
 }
