@@ -49,11 +49,11 @@ private:
 	FrameTimer ft;
 	MoveSpace mp;
 	std::mt19937 rng;
-	//Effect test;
-	static constexpr float starRad = 150.0f;
+	static constexpr float starRad = 420.0f;
 	static constexpr float minStarRad = 120.0f;
-	static constexpr int height = 10;
-	static constexpr int width = 20;
+	static constexpr int nStars = 360;
+	static constexpr float heightSq = (float)nStars / 2.0f;
+	static constexpr float widthSq = (float)nStars * 2.0f;
 	float runTime = 0.0f;
 
 	bool mouseIsPressed;

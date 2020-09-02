@@ -143,6 +143,8 @@ public:
 	virtual void Update(float deltaT, const std::vector<std::shared_ptr<Drawer>> shape)
 	{
 	}
+	Vec2 GetTL() const { return TL; }
+	Vec2 GetBR() const { return BR; }
 	const shape* GetShape() const { return s.get(); }
 };
 
@@ -164,9 +166,10 @@ class Effect : public Drawer
 	float startScale = (EffectScale + minScale) / 2.0f;
 	float scaleApplied = 1.0f;
 	float timePassed = 0.0f;
+	float timeToRotate = 0.0f;
 
 public:
-	Effect(std::shared_ptr<shape> s, const Color c, const Color c2, float minScale, float timeToChange, float timeToShrink)
+	Effect(std::shared_ptr<shape> s, const Color c, const Color c2, float minScale, float timeToChange, float timeToShrink, float timeToRotate)
 		:
 		Drawer(s, c),
 		c1(c),
@@ -176,7 +179,8 @@ public:
 		curB((float)c.GetB()),
 		timeToChange(timeToChange),
 		timeToShrink(timeToShrink),
-		minScale(minScale)
+		minScale(minScale),
+		timeToRotate(timeToRotate)
 	{
 		SetScale(startScale);
 	}
@@ -187,6 +191,7 @@ public:
 		std::uniform_real_distribution<float>innerRad(15.0f, 120.0f);
 		std::uniform_real_distribution<float>outerRad(120.0f, starRad);
 		std::uniform_real_distribution<float>timeToChange(0.1f, 2.0f);
+		std::uniform_real_distribution<float>timeToRotate(0.0f, 20.0f);
 		std::uniform_real_distribution<float>zeroToOne(0.1f, 0.9f);
 		std::uniform_int_distribution<int>prongs(3, 12);
 		std::uniform_int_distribution<int>hue(0, 255);
@@ -200,7 +205,8 @@ public:
 
 		star Star = star(outerRad(rng), innerRad(rng), prongs(rng));
 		float min = zeroToOne(rng);
-		return Effect(std::make_shared<star>(Star), c1, c2, min, timeToChange(rng) * 5.0f, timeToChange(rng));
+		return Effect(std::make_shared<star>(Star), c1, c2, min, timeToChange(rng) * 5.0f, 
+			timeToChange(rng), timeToRotate(rng) - 10.0f);
 	}
 	void ScaleFrom(float scale, Vec2 point) override
 	{
@@ -235,6 +241,10 @@ public:
 
 		timePassed += deltaT;
 		SetScale((startScale + (sin(timePassed / timeToShrink) * sinMultiplier)) * scaleApplied);
+		if (timeToRotate != 0.0f)
+		{
+			Rotate((deltaT * PI * 2.0f) / timeToRotate);
+		}
 	}
 };
 
@@ -314,7 +324,6 @@ public:
 struct MoveSpace
 {
 	std::vector<std::shared_ptr<Drawer>> shapes;
-	std::vector<std::pair<std::shared_ptr<Drawer>, std::shared_ptr<Drawer>>> collisions;
 	void Move(Vec2 deltaPos)
 	{
 		pos += deltaPos;
@@ -373,14 +382,15 @@ struct MoveSpace
 			drawer->Draw(gfx);
 		}
 	}
-	void Add(std::shared_ptr<Drawer> d)
+	template <typename T>
+	void Add(std::shared_ptr<T> d)
 	{
 		shapes.push_back(d);
 	}
 	template <typename T>
 	void Add(T d)
 	{
-		shapes.push_back(std::make_shared<T>(d));
+		Add(std::make_shared<T>(d));
 	}
 	void SetOrigin(Vec2 newPos)
 	{

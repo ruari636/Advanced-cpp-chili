@@ -26,31 +26,45 @@ Game::Game(MainWindow& wnd)
     wnd(wnd),
     gfx(wnd),
     rng(std::random_device()())
-    //test(std::make_shared<star>(star(120.0f, 360.0f, 12)), 
-        //Colors::Red, Colors::Cyan, 0.5f, 3.0f, 3.0f)
 {
-    std::uniform_real_distribution<float>innerRad(15.0f, minStarRad);
-    std::uniform_real_distribution<float>outerRad(minStarRad, starRad);
+    float FieldWidth = sqrt(widthSq) * starRad;
+    float FieldHeight = sqrt(heightSq) * starRad;
+    std::uniform_real_distribution<float>locX(-0.5f * FieldWidth, 0.5f * FieldWidth);
+    std::uniform_real_distribution<float>locY(-0.5f * FieldHeight, 0.5f * FieldHeight);
+    std::uniform_real_distribution<float>outerRad(120.0f, starRad);
+    std::uniform_real_distribution<float>innerRad(15.0f, 120.0f);
     std::uniform_int_distribution<int>prongs(3, 12);
-    std::uniform_int_distribution<int>hue(0, 255);
-    Vec2 loc{ -(starRad) * width + gfx.ScreenWidth,
-        -(starRad - minStarRad) * height + gfx.ScreenHeight};
+    std::uniform_real_distribution<float>timeToChange(0.1f, 2.0f);
+    std::uniform_real_distribution<float>timeToRotate(0.0f, 20.0f);
+    std::uniform_real_distribution<float>zeroToOne(0.1f, 0.9f);
     float curStarRad = 0.0f;
 
-    //test.MoveTo({ 100.0f,100.0f });
-
-    for (int x = 0; x < width; x++)
+    while (mp.AcessMembers().size() < nStars)
     {
-        loc.y = -starRad * height + gfx.ScreenHeight;
-        for (int y = 0; y < height; y++)
+        float maxRad = outerRad(rng);
+        Vec2 pos(locX(rng), locY(rng));
+        if (std::any_of(mp.AcessMembers().begin(), mp.AcessMembers().end(),
+            [&](const std::shared_ptr<Drawer>& d)
+            {
+                return (d->GetPos() - pos).LenSq() < sq(maxRad + d->GetShape()->GetRad());
+            }))
         {
-            Effect Star(Effect::RandomStar(starRad));
-            curStarRad = Star.GetShape()->GetRad();
-            Star.MoveTo(loc + Vec2{ 0, curStarRad });
-            mp.Add(Star);
-            loc.y += curStarRad * 2;
+            continue;
         }
-        loc.x += starRad * 2;
+
+        std::uniform_int_distribution<int>hue(0, 255);
+
+        Color c1 = Color(hue(rng), hue(rng), hue(rng));
+        Color c2 = Color(hue(rng), hue(rng), hue(rng));
+        if (c1.GetR() > c2.GetR())
+        {
+            std::swap(c1, c2);
+        }
+        star s(maxRad, innerRad(rng), prongs(rng));
+        auto add = Effect(std::make_shared<star>(s), c1, c2, zeroToOne(rng), timeToChange(rng) * 5.0f,
+            timeToChange(rng), timeToRotate(rng) - 10.0f);
+        add.MoveTo(pos);
+        mp.Add(add);
     }
 }
 
@@ -91,7 +105,6 @@ void Game::UpdateModel()
         if (e.GetType() == Mouse::Event::Type::WheelDown)
         {
             mp.ScaleFrom(0.95f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
-            //test.ScaleFrom(0.95f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
         }
         else if (e.GetType() == Mouse::Event::Type::WheelUp)
         {
@@ -103,6 +116,11 @@ void Game::UpdateModel()
         mp.RotateCenter(PI * 2.0f * deltaT, //{ 0.0f,0.0f });
             { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
         //test.RotateCenter(PI * 2.0f * deltaT, { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
+    }
+    if (wnd.kbd.KeyIsPressed(VK_LEFT))
+    {
+        mp.RotateCenter(-PI * 2.0f * deltaT,
+            { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
     }
     mp.Update(deltaT);
 }
