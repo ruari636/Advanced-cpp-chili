@@ -74,11 +74,11 @@ void Game::UpdateModel()
     }
     if (wnd.kbd.KeyIsPressed(VK_LEFT))
     {
-        mp.Rotate(deltaT);
+        mp.RotateCenter(deltaT, { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
     }
     if (wnd.kbd.KeyIsPressed(VK_RIGHT))
     {
-        mp.Rotate(-deltaT);
+        mp.RotateCenter(-deltaT, { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
     }
 
     if (wnd.mouse.LeftIsPressed())
