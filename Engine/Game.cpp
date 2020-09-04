@@ -100,22 +100,19 @@ void Game::UpdateModel()
     {
         mouseIsPressed = false;
     }
-    
-    //Scrolling, doesn't scale the balls yet
-    /*while (!wnd.mouse.IsEmpty())
+
+    while (!wnd.mouse.IsEmpty())
     {
         const auto e = wnd.mouse.Read();
         if (e.GetType() == Mouse::Event::Type::WheelDown)
         {
-            mp.SetOrigin(Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
-            mp.Scale(0.95f);
+            mp.ScaleFrom(0.95f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
         }
         else if (e.GetType() == Mouse::Event::Type::WheelUp)
         {
-            mp.SetOrigin(Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
-            mp.Scale(1.05f);
+            mp.ScaleFrom(1.05f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
         }
-    }*/
+    }
 
     std::pair<Vec2,Vec2> plank = 
         std::static_pointer_cast<Plank>(*mp.AcessMembers().begin())->GetCorners();

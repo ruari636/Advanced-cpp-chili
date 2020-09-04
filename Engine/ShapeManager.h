@@ -288,6 +288,7 @@ class Ball : public Drawer
 {
 	Vec2 vel;
 	float radius;
+	float DeltaScale = 1.0f;
 
 public:
 	Ball(float radius, Vec2 loc, Vec2 vel, Color c = Colors::Red)
@@ -300,15 +301,15 @@ public:
 	}
 	void Update(float deltaT, const std::vector<std::shared_ptr<Drawer>> collisions) override
 	{
-		Move(vel * deltaT);
+		Move(GetVel() * deltaT);
 	}
 	float GetRadius() const
 	{
-		return radius;
+		return radius * DeltaScale;
 	}
 	Vec2 GetVel() const
 	{
-		return vel;
+		return vel * DeltaScale;
 	}
 	void SetVel(Vec2 vel_in)
 	{
@@ -318,6 +319,11 @@ public:
 	{
 		Drawer::RotateCenter(theta, point);
 		vel.Rotate(theta);
+	}
+	void ScaleFrom(float deltaScale, Vec2 point) override
+	{
+		DeltaScale *= deltaScale;
+		Drawer::ScaleFrom(deltaScale, point);
 	}
 };
 
