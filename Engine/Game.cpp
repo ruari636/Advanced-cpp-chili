@@ -20,6 +20,7 @@
  ******************************************************************************************/
 #include "MainWindow.h"
 #include "Game.h"
+#include "Mat2.h"
 
 Game::Game(MainWindow& wnd)
     :
@@ -52,19 +53,19 @@ Game::Game(MainWindow& wnd)
             continue;
         }
 
-        std::uniform_int_distribution<int>hue(0, 255);
+            std::uniform_int_distribution<int>hue(0, 255);
 
-        Color c1 = Color(hue(rng), hue(rng), hue(rng));
-        Color c2 = Color(hue(rng), hue(rng), hue(rng));
-        if (c1.GetR() > c2.GetR())
-        {
-            std::swap(c1, c2);
-        }
-        star s(maxRad, innerRad(rng), prongs(rng));
-        auto add = Effect(std::make_shared<star>(s), c1, c2, zeroToOne(rng), timeToChange(rng) * 5.0f,
-            timeToChange(rng), timeToRotate(rng) - 10.0f);
-        add.MoveTo(pos);
-        mp.Add(add);
+            Color c1 = Color(hue(rng), hue(rng), hue(rng));
+            Color c2 = Color(hue(rng), hue(rng), hue(rng));
+            if (c1.GetR() > c2.GetR())
+            {
+                std::swap(c1, c2);
+            }
+            star s(maxRad, innerRad(rng), prongs(rng));
+            auto add = Effect(std::make_shared<star>(s), c1, c2, zeroToOne(rng), timeToChange(rng) * 5.0f,
+                timeToChange(rng), timeToRotate(rng) - 10.0f);
+            add.MoveTo(pos);
+            mp.Add(add);
     }
 }
 
