@@ -20,7 +20,7 @@
  ******************************************************************************************/
 #include "MainWindow.h"
 #include "Game.h"
-#include "Mat2.h"
+#include "Mat3.h"
 
 Game::Game(MainWindow& wnd)
     :
@@ -64,7 +64,7 @@ Game::Game(MainWindow& wnd)
             star s(maxRad, innerRad(rng), prongs(rng));
             auto add = Effect(std::make_shared<star>(s), c1, c2, zeroToOne(rng), timeToChange(rng) * 5.0f,
                 timeToChange(rng), timeToRotate(rng) - 10.0f);
-            add.MoveTo(pos);
+            //add.MoveTo(pos);
             mp.Add(add);
     }
 }
@@ -87,7 +87,7 @@ void Game::UpdateModel()
             Vec2 curMousePos = { float(wnd.mouse.GetPosX()), float(wnd.mouse.GetPosY()) };
             Vec2 deltaMove = curMousePos - prevMousePos;
             prevMousePos = curMousePos;
-            mp.Move(deltaMove);
+            //mp.Move(deltaMove);
         }
         if (!mouseIsPressed)
         {
@@ -105,23 +105,23 @@ void Game::UpdateModel()
         const auto e = wnd.mouse.Read();
         if (e.GetType() == Mouse::Event::Type::WheelDown)
         {
-            mp.ScaleFrom(0.95f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
+            //mp.ScaleFrom(0.95f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
         }
         else if (e.GetType() == Mouse::Event::Type::WheelUp)
         {
-            mp.ScaleFrom(1.05f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
+            //mp.ScaleFrom(1.05f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
         }
     }
     if (wnd.kbd.KeyIsPressed(VK_RIGHT))
     {
-        mp.RotateCenter(PI * 2.0f * deltaT, //{ 0.0f,0.0f });
-            { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
+        //mp.RotateCenter(PI * 2.0f * deltaT, //{ 0.0f,0.0f });
+        //    { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
         //test.RotateCenter(PI * 2.0f * deltaT, { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
     }
     if (wnd.kbd.KeyIsPressed(VK_LEFT))
     {
-        mp.RotateCenter(-PI * 2.0f * deltaT,
-            { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
+        //mp.RotateCenter(-PI * 2.0f * deltaT,
+        //    { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
     }
     mp.Update(deltaT);
 }
