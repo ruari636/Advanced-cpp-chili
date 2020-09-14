@@ -65,6 +65,8 @@ Game::Game(MainWindow& wnd)
             auto add = Effect(std::make_shared<star>(s), c1, c2, zeroToOne(rng), timeToChange(rng) * 5.0f,
                 timeToChange(rng), timeToRotate(rng) - 10.0f);
             //add.MoveTo(pos);
+            //Mat3 newPos = Mat3::Identity().SetOffset(pos);
+            add.SetTransForm(Mat3::Identity().SetOffset(pos));
             mp.Add(add);
     }
 }
@@ -88,6 +90,7 @@ void Game::UpdateModel()
             Vec2 deltaMove = curMousePos - prevMousePos;
             prevMousePos = curMousePos;
             //mp.Move(deltaMove);
+            mp.Transform(Mat3::Identity().SetOffset(deltaMove));
         }
         if (!mouseIsPressed)
         {
@@ -106,16 +109,19 @@ void Game::UpdateModel()
         if (e.GetType() == Mouse::Event::Type::WheelDown)
         {
             //mp.ScaleFrom(0.95f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
+            mp.Transform(Mat3::Identity().Scale(0.95f));
         }
         else if (e.GetType() == Mouse::Event::Type::WheelUp)
         {
             //mp.ScaleFrom(1.05f, Vec2(gfx.ScreenWidth / 2, gfx.ScreenHeight / 2));
+            mp.Transform(Mat3::Identity().Scale(1.05f));
         }
     }
     if (wnd.kbd.KeyIsPressed(VK_RIGHT))
     {
         //mp.RotateCenter(PI * 2.0f * deltaT, //{ 0.0f,0.0f });
         //    { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
+        mp.Transform(Mat3::Identity().Rotate(PI * 2.0f * deltaT));
         //test.RotateCenter(PI * 2.0f * deltaT, { (float)gfx.ScreenWidth / 2.0f, (float)gfx.ScreenHeight / 2.0f });
     }
     if (wnd.kbd.KeyIsPressed(VK_LEFT))

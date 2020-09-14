@@ -45,7 +45,7 @@ public:
 	template <typename T2>
 	explicit _Vec3( const _Vec2<T2>& vec2 )
 		:
-		_Vec3( (T)vec2.x,(T)vec2.y,(T)0 )
+		_Vec3( (T)vec2.x,(T)vec2.y,(T)1 )
 	{}
 	T		LenSq() const
 	{
@@ -174,7 +174,7 @@ public:
 		return temp;
 	}
 public:
-	T z;
+	T z = (T)1;
 };
 
 typedef _Vec3<float> Vec3;

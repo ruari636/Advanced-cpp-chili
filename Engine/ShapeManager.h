@@ -62,6 +62,7 @@ public:
 			BR = Vertices[0];
 			for (Vec2& v : Vertices)
 			{
+				//Vec2 test = (Vec2)(tForm * (Vec3)v);
 				v = (Vec2)(tForm * (Vec3)v);
 				TL.x = std::min(TL.x, v.x);
 				TL.y = std::min(TL.y, v.y);
@@ -188,7 +189,7 @@ public:
 		cur = Color((int)curR, (int)curG, (int)curB);
 
 		timePassed += deltaT;
-		SetScale((startScale + (sin(timePassed / timeToShrink) * sinMultiplier)) * scaleApplied);
+		//SetScale((startScale + (sin(timePassed / timeToShrink) * sinMultiplier)) * scaleApplied);
 		if (timeToRotate != 0.0f)
 		{
 			ApplyTransform(Mat3::Identity().Rotate((deltaT * PI * 2.0f) / timeToRotate));
@@ -205,7 +206,7 @@ public:
 		:
 		Drawer(std::make_shared<shape>(), c)
 	{
-		MoveTo(anchor);
+		//MoveTo(anchor);
 		moveable -= anchor;
 		plank.push_back({0.0f,0.0f});
 		plank.push_back(moveable);
@@ -239,11 +240,11 @@ public:
 		Drawer(std::make_shared<star>(star(radius, radius, (std::min)(int(radius), 36))), c),
 		radius(radius)
 	{
-		MoveTo(loc);
+		//MoveTo(loc);
 	}
 	void Update(float deltaT, const std::vector<std::shared_ptr<Drawer>> collisions) override
 	{
-		Move(vel * deltaT);
+		//Move(vel * deltaT);
 	}
 	float GetRadius() const
 	{

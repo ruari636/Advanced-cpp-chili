@@ -41,10 +41,21 @@ struct _Mat3
 		}
 		return out;
 	}
+	_Vec2<T> GetOffset()
+	{
+		return _Vec2<T>(cells[2][0], cells[2][1]);
+	}
+	const _Mat3& SetOffset(_Vec2<T> newOff)
+	{
+		cells[2][0] = newOff.x;
+		cells[2][1] = newOff.y;
+		return *this;
+	}
 	static _Mat3 Scale(T scalar)
 	{
-		return { scalar, T(0),	
-			T(0), scalar };
+		return { scalar, T(0), T(0),
+				T(0), scalar, T(0),
+				T(0), T(0), T(1)};
 	}
 	static _Mat3 Identity()
 	{
